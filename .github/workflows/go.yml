@@ -22,7 +22,7 @@ jobs:
 
     - name: "Read file contents"
       id: read_file
-      uses: satya-500/read-file-github-action@v1
+      uses: satya-500/read-file-github-action@v1.0.0
       with:
         path: "main.go"
 
