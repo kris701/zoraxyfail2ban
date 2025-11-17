@@ -65,7 +65,9 @@ func main() {
 				panic(err)
 			}
 			cmd2.Wait()
-			exec.Command("sudo", "systemctl", "restart", "fail2ban")
+			cmd3 := exec.Command("fail2ban-client", "reload", "--restart")
+			cmd3.Run();
+			cmd3.Wait();
 			return
 		}
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -91,7 +93,9 @@ func main() {
 				panic(err)
 			}
 			cmd2.Wait()
-			exec.Command("sudo", "systemctl", "restart", "fail2ban")
+			cmd3 := exec.Command("fail2ban-client", "reload", "--restart")
+			cmd3.Run();
+			cmd3.Wait();
 			return
 		}
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -108,11 +112,36 @@ func main() {
 		w.Write([]byte(response))
 	}, nil)
 
+	embedWebRouter.HandleFunc("/api/ban", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			bytedata, _ := io.ReadAll(r.Body)
+			reqBodyString := string(bytedata)
+			fmt.Println("Manually banning IP:" + reqBodyString)
+			cmd := exec.Command("fail2ban-client", "set", "zoraxy", "banip", reqBodyString)
+			cmd.Run();
+			cmd.Wait();
+			return
+		}
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}, nil)
+
+	embedWebRouter.HandleFunc("/api/unban", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			bytedata, _ := io.ReadAll(r.Body)
+			reqBodyString := string(bytedata)
+			fmt.Println("Manually unbanning IP:" + reqBodyString)
+			cmd := exec.Command("fail2ban-client", "set", "zoraxy", "unbanip", reqBodyString)
+			cmd.Run();
+			cmd.Wait();
+			return
+		}
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}, nil)
+
 	http.Handle(UI_PATH, embedWebRouter.Handler())
 	fmt.Println("Fail2Ban started at http://127.0.0.1:" + strconv.Itoa(runtimeCfg.Port))
 	err = http.ListenAndServe("127.0.0.1:"+strconv.Itoa(runtimeCfg.Port), nil)
 	if err != nil {
 		panic(err)
 	}
-
 }

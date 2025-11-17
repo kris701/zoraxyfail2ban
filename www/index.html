@@ -16,7 +16,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
             background:none;
@@ -27,21 +27,36 @@
     <!-- Dark theme script must be included after body tag-->
     <link rel="stylesheet" href="/darktheme.css">
     <script src="/script/darktheme.js"></script>
-    <div style="display:flex;flex-direction:column;width:80%">
-        <div style="display:flex;flex-direction:column;text-align: center;">
+    <div style="display:flex;flex-direction:column;width:80%;height:100vh">
+        <div style="display:flex;flex-direction:column;text-align: center">
             <h1>Fail2Ban Plugin</h1>
             <p>Welcome to the Fail2Ban plugin.</p>
             <p>Here you can see current IPs banned by Fail2ban as well as reconfigure fail2ban itself.</p>
-            <textarea id="statusfield" disabled style="width:100%;height:150px"></textarea>
+            <textarea id="statusfield" disabled style="width:100%;height:200px"></textarea>
             <button class="ui button primary" id="refreshStatusButton">Refresh</button>
+            <div>
+                <p>Manually add or remove banned IPs to fail2ban.</p>
+                <div class="ui form" style="display:flex;margin:5px">
+                    <div class="field" style="width:100%;margin:0px 5px 0px 0px;align-self: center;">
+                        <input type="text" id="banIpInput" placeholder="IP">
+                    </div>
+                    <button class="ui button primary" style="width:20%" id="banIPButton">Ban IP</button>
+                </div>
+                <div class="ui form" style="display:flex;margin:5px">
+                    <div class="field" style="width:100%;margin:0px 5px 0px 0px;align-self: center;">
+                        <input type="text" id="unbanIpInput" placeholder="IP">
+                    </div>
+                    <button class="ui button primary" style="width:20%" id="unbanIPButton">Unban IP</button>
+                </div>
+            </div>
         </div>
-        <div style="display:flex;flex-direction:column;text-align: center;">
+        <div style="display:flex;flex-direction:column;text-align: center;margin-top:1rem">
             <h2>Filter Config</h2>
             <p>Here you can change the filter configuration for reading the Zoraxy logs.</p>
             <textarea id="filterconfig" style="width:100%;height:150px"></textarea>
             <button class="ui button primary" id="updateFilterConfigRequestButton">Update</button>
         </div>
-        <div style="display:flex;flex-direction:column;text-align: center;">
+        <div style="display:flex;flex-direction:column;text-align: center;margin-top:1rem">
             <h2>Jail Config</h2>
             <p>Here you can change the jail configuration for reading the Zoraxy logs.</p>
             <textarea id="jailconfig" style="width:100%;height:150px"></textarea>
@@ -50,29 +65,7 @@
     </div>
 	
 	<script>
-		document.getElementById('refreshStatusButton').addEventListener('click', function() {
-			$.ajax({
-				url: `./api/getstatus`,
-				type: 'GET',
-				success: function(data) {
-					document.getElementById('statusfield').value = data;
-				},
-				error: function(xhr, status, error) {
-					document.getElementById('statusfield').value = "Error getting fail2ban status!";
-				}
-			});
-		});
-
-        $.ajax({
-            url: `./api/getstatus`,
-            type: 'GET',
-            success: function(data) {
-                document.getElementById('statusfield').value = data;
-            },
-            error: function(xhr, status, error) {
-                document.getElementById('statusfield').value = "Error getting fail2ban status!";
-            }
-        });
+		document.getElementById('refreshStatusButton').addEventListener('click', updateStatus);
 
 		document.getElementById('updateFilterConfigRequestButton').addEventListener('click', function() {
 			$.cjax({
@@ -81,10 +74,10 @@
                 contentType: 'text/html',
                 data: document.getElementById('filterconfig').value,
 				success: function(data) {
-					console.log('Response:', data.message);
+					updateStatus();
 				},
 				error: function(xhr, status, error) {
-					console.error('Error:', error);
+					updateStatus();
 				}
 			});
 		});   
@@ -96,10 +89,10 @@
                 contentType: 'text/html',
                 data: document.getElementById('jailconfig').value,
 				success: function(data) {
-					console.log('Response:', data.message);
+					updateStatus();
 				},
 				error: function(xhr, status, error) {
-					console.error('Error:', error);
+					updateStatus();
 				}
 			});
 		});   
@@ -124,6 +117,55 @@
                 document.getElementById('jailconfig').value = "Error getting jail config!";
             }
         })
+
+        document.getElementById('banIPButton').addEventListener('click', function() {
+			$.cjax({
+				url: `./api/ban`,
+				type: 'POST',
+                contentType: 'text/html',
+                data: document.getElementById('banIpInput').value,
+				success: function(data) {
+                    document.getElementById('banIpInput').value = "";
+                    updateStatus();
+				},
+				error: function(xhr, status, error) {
+                    document.getElementById('banIpInput').value = "";
+					updateStatus();
+				}
+			});
+		});
+
+        document.getElementById('unbanIPButton').addEventListener('click', function() {
+			$.cjax({
+				url: `./api/unban`,
+				type: 'POST',
+                contentType: 'text/html',
+                data: document.getElementById('unbanIpInput').value,
+				success: function(data) {
+                    document.getElementById('unbanIpInput').value = "";
+					updateStatus();
+				},
+				error: function(xhr, status, error) {
+                    document.getElementById('unbanIpInput').value = "";
+					updateStatus();
+				}
+			});
+		});
+
+        function updateStatus() {
+            $.ajax({
+                url: `./api/getstatus`,
+                type: 'GET',
+                success: function(data) {
+                    document.getElementById('statusfield').value = data;
+                },
+                error: function(xhr, status, error) {
+                    document.getElementById('statusfield').value = "Error getting fail2ban status!";
+                }
+            });
+        }
+
+        updateStatus();
 	</script>
 </body>
 </html>

@@ -4,7 +4,7 @@ Test
 
 # Installation
 
-```
+```bash
 sudo -i
 apt update
 apt upgrade
@@ -49,11 +49,12 @@ chmod 777 /etc/fail2ban/jail.local
 
 systemctl restart fail2ban
 
+chmod 777 /var/run/fail2ban/fail2ban.sock
 ```
 
 Then
 
-```
+```bash
 mkdir -p /opt/zoraxy/plugins/zoraxyfail2ban
 cd /opt/zoraxy/plugins/zoraxyfail2ban
 wget https://github.com/kris701/ZoraxyFail2BanPlugin/releases/download/v0.1.0/zoraxyfail2ban
