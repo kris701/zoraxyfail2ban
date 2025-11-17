@@ -1,0 +1,60 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.6'
+
+    - name: Build
+      run: go build
+
+    - name: "Read file contents"
+      id: read_file
+      uses: satya-500/read-file-github-action@v1
+      with:
+        path: "main.go"
+
+    - uses: actions-ecosystem/action-regex-match@v2
+      id: get-major-version
+      with:
+        text: ${ steps.read_file.outputs.contents }
+        regex: 'VersionMajor:\s*([^,]*)'
+
+    - uses: actions-ecosystem/action-regex-match@v2
+      id: get-minor-version
+      with:
+        text: ${ steps.read_file.outputs.contents }
+        regex: 'VersionMinor:\s*([^,]*)'
+
+    - uses: actions-ecosystem/action-regex-match@v2
+      id: get-build-version
+      with:
+        text: ${ steps.read_file.outputs.contents }
+        regex: 'VersionPatch:\s*([^,]*)'
+
+    - name: Generate tag
+      continue-on-error: true
+      uses: rickstaa/action-create-tag@v1
+      id: "tag_create"
+      with:
+        tag: "v${{ steps.get-major-version.outputs.group1 }}.${{ steps.get-minor-version.outputs.group1 }}.${{ steps.get-build-version.outputs.group1 }}"
+        message: "Latest release"
+
+    - name: Generate Release
+      uses: ncipollo/release-action@v1
+      with:
+        skipIfReleaseExists: true
+        artifacts: "zoraxyfail2ban"
+        tag: "v${{ steps.get-major-version.outputs.group1 }}.${{ steps.get-minor-version.outputs.group1 }}.${{ steps.get-build-version.outputs.group1 }}"
