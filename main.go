@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"encoding/json"
 	"os"
 	"os/exec"
 	"io"
@@ -66,22 +65,47 @@ func main() {
 				panic(err)
 			}
 			cmd2.Wait()
+			exec.Command("sudo", "systemctl", "restart", "fail2ban")
+			return
+		}
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}, nil)
+
+	embedWebRouter.HandleFunc("/api/jail", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			cmd := exec.Command("cat", "/etc/fail2ban/jail.local")
+			stdout, _ := cmd.Output()
+			w.Header().Set("Content-Type", "text/html")
+			response := string(stdout)
+			w.Write([]byte(response))
+			return 
+		} else if r.Method == http.MethodPost {
+			bytedata, _ := io.ReadAll(r.Body)
+			reqBodyString := string(bytedata)
+			fmt.Println("Updating fail2ban jail config.")
+			cmd2 := exec.Command("echo", string(reqBodyString))
+			outfile, err := os.Create("/etc/fail2ban/jail.local")
+			defer outfile.Close()
+			cmd2.Stdout = outfile
+			err = cmd2.Start(); if err != nil {
+				panic(err)
+			}
+			cmd2.Wait()
+			exec.Command("sudo", "systemctl", "restart", "fail2ban")
 			return
 		}
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}, nil)
 	
 	embedWebRouter.HandleFunc("/api/getstatus", func(w http.ResponseWriter, r *http.Request) {
-		cmd := exec.Command("bash", "-c", "fail2ban-client status zoraxy")
+		cmd := exec.Command("fail2ban-client", "status", "zoraxy")
 		stdout, err := cmd.Output()
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		w.Header().Set("Content-Type", "application/json")
-		response := map[string]string{"message": string(stdout)}
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		}
+		w.Header().Set("Content-Type", "text/html")
+		response := string(stdout)
+		w.Write([]byte(response))
 	}, nil)
 
 	http.Handle(UI_PATH, embedWebRouter.Handler())
