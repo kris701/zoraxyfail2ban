@@ -33,7 +33,7 @@ func main() {
 		Type:          plugin.PluginType_Utilities,
 		VersionMajor:  0,
 		VersionMinor:  1,
-		VersionPatch:  0,
+		VersionPatch:  1,
 		UIPath: UI_PATH,
 	})
 	if err != nil {
