@@ -10,7 +10,7 @@
     <script src="/script/utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/main.css">
-    <title>Hello World</title>
+    <title>Fail2Ban</title>
     <style>
         body {
             display: flex;
@@ -27,10 +27,19 @@
     <!-- Dark theme script must be included after body tag-->
     <link rel="stylesheet" href="/darktheme.css">
     <script src="/script/darktheme.js"></script>
-    <div style="text-align: center;">
-        <h1>Hello World</h1>
-        <p>Welcome to your first Zoraxy plugin</p>
-		<button class="ui button primary" id="sendRequestButton">Send Request</button>
+    <div style="display:flex;flex-direction:column;width:80%">
+        <div style="display:flex;flex-direction:column;text-align: center;">
+            <h1>Fail2Ban Plugin</h1>
+            <p>Welcome to the Fail2Ban plugin.</p>
+            <p>Here you can see current IPs banned by Fail2ban as well as reconfigure fail2ban itself.</p>
+            <button class="ui button primary" id="sendRequestButton">Send Request</button>
+        </div>
+        <div style="display:flex;flex-direction:column;text-align: center;">
+            <h2>Config</h2>
+            <p>Here you can change the filter configuration for reading the Zoraxy logs.</p>
+            <textarea id="filterconfig" style="width:100%;height:150px"></textarea>
+            <button class="ui button primary" id="updateFilterConfigRequestButton">Update</button>
+        </div>
     </div>
 	
 	<script>
@@ -46,6 +55,32 @@
 				}
 			});
 		});
+
+		document.getElementById('updateFilterConfigRequestButton').addEventListener('click', function() {
+			$.cjax({
+				url: `./api/filter`,
+				type: 'POST',
+                contentType: 'text/html',
+                data: document.getElementById('filterconfig').value,
+				success: function(data) {
+					console.log('Response:', data.message);
+				},
+				error: function(xhr, status, error) {
+					console.error('Error:', error);
+				}
+			});
+		});        
+
+        $.ajax({
+            url: './api/filter',
+            type: 'GET',
+            success: function(data) {
+                document.getElementById('filterconfig').value = data;
+            },
+            error: function(xhr, status, error) {
+                document.getElementById('filterconfig').value = "Error getting filter config!";
+            }
+        })
 	</script>
 </body>
 </html>

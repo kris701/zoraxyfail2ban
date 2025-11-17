@@ -17,7 +17,7 @@ cat <<EOF >/etc/fail2ban/filter.d/zoraxy.conf
 # FAILREGEX: Counts errors (401|403|404|429|444), ignores requests for favicon.ico, robots.txt, /api/notes/, api/renew, apple-touch-icon
 failregex = \[client:\s*<HOST>\].*(GET|POST|HEAD|PUT|DELETE|OPTIONS)\s+/(?!favicon\.ico|robots\.txt|api/notes/|api/renew|apple-touch-icon(?:-[^/]+)?(?:-precomposed)?\.png)[^\s]*\s+(401|403|404|429|444)
 EOF
-chmod 644 /etc/fail2ban/filter.d/zoraxy.conf
+chmod 777 /etc/fail2ban/filter.d/zoraxy.conf
 
 
 cat <<EOF >/etc/fail2ban/jail.local
@@ -45,7 +45,7 @@ bantime.maxtime = 720h
 # banaction = iptables-allports
 banaction = nftables-allports
 EOF
-chmod 644 /etc/fail2ban/jail.local
+chmod 777 /etc/fail2ban/jail.local
 
 systemctl restart fail2ban
 

@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"encoding/json"
+	"os"
 	"os/exec"
+	"io"
 
 	plugin "github.com/kris701/zoraxyfail2ban/mod/zoraxy_plugin"
 )
@@ -18,6 +20,7 @@ const (
 	WEB_ROOT  = "/www"
 )
 
+//go:embed www/*
 var content embed.FS
 
 func main() {
@@ -41,6 +44,31 @@ func main() {
 	embedWebRouter := plugin.NewPluginEmbedUIRouter(PLUGIN_ID, &content, WEB_ROOT, UI_PATH)
 	embedWebRouter.RegisterTerminateHandler(func() {
 		fmt.Println("Fail2Ban Plugin Exited")
+	}, nil)
+	
+	embedWebRouter.HandleFunc("/api/filter", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			cmd := exec.Command("cat", "/etc/fail2ban/filter.d/zoraxy.conf")
+			stdout, _ := cmd.Output()
+			w.Header().Set("Content-Type", "text/html")
+			response := string(stdout)
+			w.Write([]byte(response))
+			return 
+		} else if r.Method == http.MethodPost {
+			bytedata, _ := io.ReadAll(r.Body)
+			reqBodyString := string(bytedata)
+			fmt.Println("Updating fail2ban filter config.")
+			cmd2 := exec.Command("echo", string(reqBodyString))
+			outfile, err := os.Create("/etc/fail2ban/filter.d/zoraxy.conf")
+			defer outfile.Close()
+			cmd2.Stdout = outfile
+			err = cmd2.Start(); if err != nil {
+				panic(err)
+			}
+			cmd2.Wait()
+			return
+		}
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}, nil)
 	
 	embedWebRouter.HandleFunc("/api/getstatus", func(w http.ResponseWriter, r *http.Request) {
