@@ -30,21 +30,21 @@ jobs:
       id: get-major-version
       with:
         text: ${ steps.read_file.outputs.contents }
-        regex: 'VersionMajor:\s*([^,]*)'
+        regex: '/VersionMajor:\s*([^,]*)'
         flags: gm
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: get-minor-version
       with:
         text: ${ steps.read_file.outputs.contents }
-        regex: 'VersionMinor:\s*([^,]*)'
+        regex: '/VersionMinor:\s*([^,]*)'
         flags: gm
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: get-build-version
       with:
         text: ${ steps.read_file.outputs.contents }
-        regex: 'VersionPatch:\s*([^,]*)'
+        regex: '/VersionPatch:\s*([^,]*)'
         flags: gm
 
     - name: Generate tag
