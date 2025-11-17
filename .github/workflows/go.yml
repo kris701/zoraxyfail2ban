@@ -26,25 +26,25 @@ jobs:
       with:
         path: "main.go"
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - uses: actions-ecosystem/action-regex-match@v2.0.2
       id: get-major-version
       with:
-        text: ${ steps.read_file.outputs.contents }
-        regex: '/VersionMajor:\s*([^,]*)'
+        text: ${{ steps.read_file.outputs.contents }}
+        regex: 'VersionMajor:\s*([^,]*)'
         flags: gm
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - uses: actions-ecosystem/action-regex-match@v2.0.2
       id: get-minor-version
       with:
-        text: ${ steps.read_file.outputs.contents }
-        regex: '/VersionMinor:\s*([^,]*)'
+        text: ${{ steps.read_file.outputs.contents }}
+        regex: 'VersionMinor:\s*([^,]*)'
         flags: gm
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - uses: actions-ecosystem/action-regex-match@v2.0.2
       id: get-build-version
       with:
-        text: ${ steps.read_file.outputs.contents }
-        regex: '/VersionPatch:\s*([^,]*)'
+        text: ${{ steps.read_file.outputs.contents }}
+        regex: 'VersionPatch:\s*([^,]*)'
         flags: gm
 
     - name: Generate tag
