@@ -26,7 +26,7 @@ func main() {
 		Name:          "Fail2Ban",
 		Author:        "Kristian Skov Johansen",
 		AuthorContact: "kris701kj@gmail.com",
-		Description:   "A plugin to interact with fail2ban",
+		Description:   "A plugin to interact with fail2ban in Zoraxy",
 		URL:           "https://github.com/kris701/zoraxyfail2ban",
 		Type:          plugin.PluginType_Utilities,
 		VersionMajor:  0,
