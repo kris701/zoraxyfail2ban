@@ -64,7 +64,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     name: Build and Create Release
-    if: ${{needs.build.outputs.version}} != ${{needs.build.outputs.release}}
+    if: ${{needs.build.outputs.version != needs.build.outputs.release}}
     
     steps:
     - uses: actions/checkout@v4
