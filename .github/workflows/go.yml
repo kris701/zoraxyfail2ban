@@ -6,9 +6,64 @@ on:
       - main
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-current-version.outputs.version }}
+      release: ${{ steps.get-release-version.outputs.release }}
+    name: Build
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.6'
+        
+    - name: Build
+      run: go build
+      
+    - name: "Read file contents"
+      id: read_file
+      uses: satya-500/read-file-github-action@v1.0.0
+      with:
+        path: "main.go"
+
+    - uses: actions-ecosystem/action-regex-match@v2.0.2
+      id: get-major-version
+      with:
+        text: ${{ steps.read_file.outputs.contents }}
+        regex: 'VersionMajor:\s*([^,]*)'
+        flags: gm
+
+    - uses: actions-ecosystem/action-regex-match@v2.0.2
+      id: get-minor-version
+      with:
+        text: ${{ steps.read_file.outputs.contents }}
+        regex: 'VersionMinor:\s*([^,]*)'
+        flags: gm
+
+    - uses: actions-ecosystem/action-regex-match@v2.0.2
+      id: get-build-version
+      with:
+        text: ${{ steps.read_file.outputs.contents }}
+        regex: 'VersionPatch:\s*([^,]*)'
+        flags: gm
+      
+    - name: Get Current Version
+      id: get-current-version
+      run: echo "version=v${{ steps.get-major-version.outputs.group1 }}.${{ steps.get-minor-version.outputs.group1 }}.${{ steps.get-build-version.outputs.group1 }}" >> "$GITHUB_OUTPUT"
+      
+    - name: Get Release version
+      id: get-release-version
+      uses: pozetroninc/github-action-get-latest-release@master
+      with:
+        repository: ${{ github.repository }}
+
+  createRelease:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Build and Create Release
+    if: ${{needs.build.outputs.version}} != ${{needs.build.outputs.release}}
+    
     steps:
     - uses: actions/checkout@v4
 
@@ -38,39 +93,12 @@ jobs:
     - name: Build (zoraxyfail2ban_windows_amd64exe)
       run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ./build/zoraxyfail2ban_windows_amd64.exe
 
-    - name: "Read file contents"
-      id: read_file
-      uses: satya-500/read-file-github-action@v1.0.0
-      with:
-        path: "main.go"
-
-    - uses: actions-ecosystem/action-regex-match@v2.0.2
-      id: get-major-version
-      with:
-        text: ${{ steps.read_file.outputs.contents }}
-        regex: 'VersionMajor:\s*([^,]*)'
-        flags: gm
-
-    - uses: actions-ecosystem/action-regex-match@v2.0.2
-      id: get-minor-version
-      with:
-        text: ${{ steps.read_file.outputs.contents }}
-        regex: 'VersionMinor:\s*([^,]*)'
-        flags: gm
-
-    - uses: actions-ecosystem/action-regex-match@v2.0.2
-      id: get-build-version
-      with:
-        text: ${{ steps.read_file.outputs.contents }}
-        regex: 'VersionPatch:\s*([^,]*)'
-        flags: gm
-
     - name: Generate tag
       continue-on-error: true
       uses: rickstaa/action-create-tag@v1
       id: "tag_create"
       with:
-        tag: "v${{ steps.get-major-version.outputs.group1 }}.${{ steps.get-minor-version.outputs.group1 }}.${{ steps.get-build-version.outputs.group1 }}"
+        tag: "${{needs.build.outputs.version}}"
         message: "Latest release"
 
     - name: Generate Release
@@ -78,4 +106,4 @@ jobs:
       with:
         skipIfReleaseExists: true
         artifacts: "./build/*"
-        tag: "v${{ steps.get-major-version.outputs.group1 }}.${{ steps.get-minor-version.outputs.group1 }}.${{ steps.get-build-version.outputs.group1 }}"
+        tag: "${{needs.build.outputs.version}}"
