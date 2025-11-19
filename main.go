@@ -31,9 +31,9 @@ func main() {
 		Description:   "A plugin to interact with fail2ban in Zoraxy",
 		URL:           "https://github.com/kris701/zoraxyfail2ban",
 		Type:          plugin.PluginType_Utilities,
-		VersionMajor:  0,
-		VersionMinor:  1,
-		VersionPatch:  1,
+		VersionMajor:  1,
+		VersionMinor:  0,
+		VersionPatch:  0,
 		UIPath: UI_PATH,
 	})
 	if err != nil {

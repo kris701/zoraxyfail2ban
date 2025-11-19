@@ -17,8 +17,26 @@ jobs:
       with:
         go-version: '1.23.6'
 
-    - name: Build
-      run: go build
+    - name: Build (zoraxyfail2ban_linux_386)
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o ./build/zoraxyfail2ban_linux_386
+      
+    - name: Build (zoraxyfail2ban_linux_amd64)
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/zoraxyfail2ban_linux_amd64
+      
+    - name: Build (zoraxyfail2ban_linux_arm)
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o ./build/zoraxyfail2ban_linux_arm
+      
+    - name: Build (zoraxyfail2ban_linux_arm64)
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ./build/zoraxyfail2ban_linux_arm64
+      
+    - name: Build (zoraxyfail2ban_linux_mipsle)
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=mipsle go build -o ./build/zoraxyfail2ban_linux_mipsle
+      
+    - name: Build (zoraxyfail2ban_linux_riscv64)
+      run: CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 go build -o ./build/zoraxyfail2ban_linux_riscv64
+      
+    - name: Build (zoraxyfail2ban_windows_amd64exe)
+      run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ./build/zoraxyfail2ban_windows_amd64.exe
 
     - name: "Read file contents"
       id: read_file
@@ -59,5 +77,5 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         skipIfReleaseExists: true
-        artifacts: "zoraxyfail2ban"
+        artifacts: "./build/*"
         tag: "v${{ steps.get-major-version.outputs.group1 }}.${{ steps.get-minor-version.outputs.group1 }}.${{ steps.get-build-version.outputs.group1 }}"
