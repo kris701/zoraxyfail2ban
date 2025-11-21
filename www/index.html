@@ -13,13 +13,50 @@
     <title>Fail2Ban</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
             background:none;
+            background-color: unset !important;
+        }
+
+        pre {
+            background-color: var(--theme_bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .fail2ban-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .fail2ban-card {
+            background-color: var(--theme_bg);
+            border: 1px solid var(--theme_divider);
+            color: var(--text_color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .fail2ban-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text_color);
+        }
+
+        .fail2ban-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text_color);
         }
     </style>
 </head>
@@ -27,76 +64,95 @@
     <!-- Dark theme script must be included after body tag-->
     <link rel="stylesheet" href="/darktheme.css">
     <script src="/script/darktheme.js"></script>
-    <div style="display:flex;flex-direction:column;width:80%;height:100vh">
-        <div style="display:flex;flex-direction:column;text-align: center">
-            <h1>Fail2Ban Plugin</h1>
-            <p>Welcome to the Fail2Ban plugin.</p>
-            <p>Here you can see current IPs banned by Fail2ban as well as reconfigure fail2ban itself.</p>
-            <textarea id="statusfield" disabled style="width:100%;height:200px"></textarea>
-            <button class="ui button primary" id="refreshStatusButton">Refresh</button>
-            <div>
-                <p>Manually add or remove banned IPs to fail2ban.</p>
-                <div class="ui form" style="display:flex;margin:5px">
-                    <div class="field" style="width:100%;margin:0px 5px 0px 0px;align-self: center;">
-                        <input type="text" id="banIpInput" placeholder="IP">
-                    </div>
-                    <button class="ui button primary" style="width:20%" id="banIPButton">Ban IP</button>
+    <div class="ui container">
+        <div class="ui basic segment">
+            <h1>Zoraxy Fail2Ban Plugin</h1>
+            
+            <p>With this plugin Zoraxy can interact with Fail2ban to ban typical bot and crawler behaviours.</p>
+            <p>
+                GitHub Repository: <a href="https://github.com/kris701/zoraxyfail2ban">https://github.com/kris701/zoraxyfail2ban</a>
+            </p>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <div class="ui basic segment">
+            <h2>Status</h2>
+            <button class="ui basic small button" onclick="updateStatus()">
+                <i class="refresh icon"></i>
+                Refresh
+            </button>
+
+            <div class="fail2ban-dashboard">
+                <div class="fail2ban-card">
+                    <div class="fail2ban-title">Jail</div>
+                    <div class="fail2ban-description">Total Failed</div>
+                    <div class="fail2ban-value" id="fail2banfilter_totalfailed"></div>
+                    <div class="fail2ban-description">Currently Failed</div>
+                    <div class="fail2ban-value" id="fail2banfilter_currentlyfailed"></div>
+                    <div class="fail2ban-description">Total banned</div>
+                    <div class="fail2ban-value" id="fail2banactions_totalbanned"></div>
+                    <div class="fail2ban-description">Currently Banned</div>
+                    <div class="fail2ban-value" id="fail2banactions_currentlybanned"></div>
                 </div>
-                <div class="ui form" style="display:flex;margin:5px">
-                    <div class="field" style="width:100%;margin:0px 5px 0px 0px;align-self: center;">
-                        <input type="text" id="unbanIpInput" placeholder="IP">
+                <div class="fail2ban-card">
+                    <div class="fail2ban-title">Banned IPs</div>
+                    <div class="fail2ban-description" style="max-height:50vh;overflow:auto" id="fail2banbannedips_ips"></div>
+                </div>
+                <div class="fail2ban-card">
+                    <div class="fail2ban-title">Manual</div>
+                    <div>
+                        <p>Manually add or remove banned IPs to fail2ban.</p>
+                        <div class="ui form" style="display:flex;margin:5px">
+                            <div class="field" style="width:100%;margin:0px 5px 0px 0px;align-self: center;">
+                                <input type="text" id="banIpInput" placeholder="IP">
+                            </div>
+                            <button class="ui basic small button" style="width:40%" onclick="banIp()">
+                                <i class="refresh icon"></i>
+                                Ban
+                            </button>
+                        </div>
+                        <div class="ui form" style="display:flex;margin:5px">
+                            <div class="field" style="width:100%;margin:0px 5px 0px 0px;align-self: center;">
+                                <input type="text" id="unbanIpInput" placeholder="IP">
+                            </div>
+                            <button class="ui basic small button" style="width:40%" onclick="unBanIp()">
+                                <i class="refresh icon"></i>
+                                Unban
+                            </button>
+                        </div>
                     </div>
-                    <button class="ui button primary" style="width:20%" id="unbanIPButton">Unban IP</button>
                 </div>
             </div>
         </div>
-        <div style="display:flex;flex-direction:column;text-align: center;margin-top:1rem">
-            <h2>Filter Config</h2>
-            <p>Here you can change the filter configuration for reading the Zoraxy logs.</p>
-            <textarea id="filterconfig" style="width:100%;height:150px"></textarea>
-            <button class="ui button primary" id="updateFilterConfigRequestButton">Update</button>
-        </div>
-        <div style="display:flex;flex-direction:column;text-align: center;margin-top:1rem">
-            <h2>Jail Config</h2>
-            <p>Here you can change the jail configuration for reading the Zoraxy logs.</p>
-            <textarea id="jailconfig" style="width:100%;height:150px"></textarea>
-            <button class="ui button primary" id="updateJailConfigRequestButton">Update</button>
+
+        <div class="ui divider"></div>
+
+        <div class="ui basic segment">
+            <h2>Settings</h2>
+            <p>Here you can change the settings that Fail2ban is running on</p>
+            <details>
+                <summary>Filter</summary>
+                <p>Here you can change the filter configuration for reading the Zoraxy logs.</p>
+                <textarea id="filterconfig" style="width:100%;height:150px"></textarea>
+                <button class="ui basic small button" onclick="updateFilter()">
+                    <i class="refresh icon"></i>
+                    Update
+                </button>
+            </details>
+            <details>
+                <summary>Jail</summary>
+                <p>Here you can change the jail configuration for reading the Zoraxy logs.</p>
+                <textarea id="jailconfig" style="width:100%;height:150px"></textarea>
+                <button class="ui basic small button" onclick="updateJail()">
+                    <i class="refresh icon"></i>
+                    Update
+                </button>
+            </details>
         </div>
     </div>
 	
 	<script>
-		document.getElementById('refreshStatusButton').addEventListener('click', updateStatus);
-
-		document.getElementById('updateFilterConfigRequestButton').addEventListener('click', function() {
-			$.cjax({
-				url: `./api/filter`,
-				type: 'POST',
-                contentType: 'text/html',
-                data: document.getElementById('filterconfig').value,
-				success: function(data) {
-					updateStatus();
-				},
-				error: function(xhr, status, error) {
-					updateStatus();
-				}
-			});
-		});   
-        
-		document.getElementById('updateJailConfigRequestButton').addEventListener('click', function() {
-			$.cjax({
-				url: `./api/jail`,
-				type: 'POST',
-                contentType: 'text/html',
-                data: document.getElementById('jailconfig').value,
-				success: function(data) {
-					updateStatus();
-				},
-				error: function(xhr, status, error) {
-					updateStatus();
-				}
-			});
-		});   
-
         $.ajax({
             url: './api/filter',
             type: 'GET',
@@ -118,12 +174,68 @@
             }
         })
 
-        document.getElementById('banIPButton').addEventListener('click', function() {
-			$.cjax({
+        function updateStatus() {
+            $.ajax({
+                url: `./api/getstatus`,
+                type: 'GET',
+                success: function(data) {
+                    document.getElementById('fail2banfilter_totalfailed').innerHTML = data.totalFailed;
+                    document.getElementById('fail2banfilter_currentlyfailed').innerHTML = data.currentlyFailed;
+
+                    document.getElementById('fail2banactions_totalbanned').innerHTML = data.totalBanned;
+                    document.getElementById('fail2banactions_currentlybanned').innerHTML = data.currentlyBanned;
+
+                    document.getElementById('fail2banbannedips_ips').innerHTML = "";
+                    data.bannedIps.forEach(ip => {
+                        var newItem = document.createElement('p');
+                        newItem.innerHTML = ip;
+                        document.getElementById('fail2banbannedips_ips').appendChild(newItem);
+                    });
+                },
+                error: function(xhr, status, error) {
+                }
+            });
+        }
+
+        function updateFilter() {
+            $.cjax({
+				url: `./api/filter`,
+				type: 'POST',
+                contentType: 'text/html',
+                data: document.getElementById('filterconfig').value,
+				success: function(data) {
+					updateStatus();
+				},
+				error: function(xhr, status, error) {
+					updateStatus();
+				}
+			});
+        }
+
+        function updateJail() {
+            $.cjax({
+				url: `./api/jail`,
+				type: 'POST',
+                contentType: 'text/html',
+                data: document.getElementById('jailconfig').value,
+				success: function(data) {
+					updateStatus();
+				},
+				error: function(xhr, status, error) {
+					updateStatus();
+				}
+			});
+        }
+
+        function banIp(){
+            var targetIp = document.getElementById('banIpInput').value;
+            if (!targetIp || targetIp == "")
+                return;
+            $.cjax({
 				url: `./api/ban`,
 				type: 'POST',
                 contentType: 'text/html',
-                data: document.getElementById('banIpInput').value,
+                data: targetIp,
 				success: function(data) {
                     document.getElementById('banIpInput').value = "";
                     updateStatus();
@@ -133,14 +245,17 @@
 					updateStatus();
 				}
 			});
-		});
+        }
 
-        document.getElementById('unbanIPButton').addEventListener('click', function() {
-			$.cjax({
+        function unBanIp(){
+            var targetIp = document.getElementById('unbanIpInput').value;
+            if (!targetIp || targetIp == "")
+                return;
+            $.cjax({
 				url: `./api/unban`,
 				type: 'POST',
                 contentType: 'text/html',
-                data: document.getElementById('unbanIpInput').value,
+                data: targetIp,
 				success: function(data) {
                     document.getElementById('unbanIpInput').value = "";
 					updateStatus();
@@ -150,19 +265,6 @@
 					updateStatus();
 				}
 			});
-		});
-
-        function updateStatus() {
-            $.ajax({
-                url: `./api/getstatus`,
-                type: 'GET',
-                success: function(data) {
-                    document.getElementById('statusfield').value = data;
-                },
-                error: function(xhr, status, error) {
-                    document.getElementById('statusfield').value = "Error getting fail2ban status!";
-                }
-            });
         }
 
         updateStatus();

@@ -79,7 +79,7 @@ You can now install the Zoraxy plugin itself, by doing the following:
 mkdir -p /opt/zoraxy/plugins/zoraxyfail2ban
 cd /opt/zoraxy/plugins/zoraxyfail2ban
 # wget <LINK_TO_LATEST_BINARY>
-wget https://github.com/kris701/zoraxyfail2ban/releases/download/v0.1.1/zoraxyfail2ban
+wget https://github.com/kris701/zoraxyfail2ban/releases/download/v1.1.0/zoraxyfail2ban
 chmod +x zoraxyfail2ban
 ```
 
