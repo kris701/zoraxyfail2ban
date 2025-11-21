@@ -2,7 +2,7 @@
 
 This is a simple plugin for [Zoraxy](https://github.com/tobychui/zoraxy) that enables you to use the [Fail2Ban](https://github.com/fail2ban/fail2ban) daemon to block spam bots and scapers. This plugin is mostly just the visual interface in Zoraxy, which includes some simple controls such as updating configs or manually banning IPs.
 
-<img width="1897" height="935" alt="image" src="https://github.com/user-attachments/assets/1aefb7bf-49b2-4700-bc0a-7ee70b63becc" />
+<img width="1132" height="840" alt="image" src="https://github.com/user-attachments/assets/8b4726e9-8373-4b40-a4c1-8c5604717211" />
 
 # Installation
 To use this plugin, you must first have fail2ban installed.
