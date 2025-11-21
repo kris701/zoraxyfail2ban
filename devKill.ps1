@@ -1,0 +1,1 @@
+wsl --user root killall -s 9 zoraxy

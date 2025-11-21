@@ -84,3 +84,13 @@ chmod +x zoraxyfail2ban
 ```
 
 Then you can restart your Zoraxy server or service and you should be able to see the new plugin in the sidebar.
+
+# Development
+
+Execute run script `devRun.ps1`.
+Then run the server with `./zoraxy -dev=true -noauth=true -port=:8564`
+You can then run `devRun.ps1` whenever you want to update the binary.
+The script needs WSL installed, and it launches a wsl process for the Zoraxy server.
+You can use `devKill.ps1` to kill the server again.
+
+This is a rather rudimentary dev system, if anyone can figure out to set up a propper Docker environment with Zoraxy and Fail2ban working, i would greatly appreciate the help :)
