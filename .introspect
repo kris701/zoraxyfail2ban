@@ -1,0 +1,19 @@
+{
+ "id": "zoraxyfail2ban",
+ "name": "Fail2Ban",
+ "author": "Kristian Skov Johansen",
+ "author_contact": "kris701kj@gmail.com",
+ "description": "A plugin to interact with fail2ban in Zoraxy",
+ "url": "https://github.com/kris701/zoraxyfail2ban",
+ "type": 1,
+ "version_major": 1,
+ "version_minor": 1,
+ "version_patch": 1,
+ "static_capture_paths": null,
+ "static_capture_ingress": "",
+ "dynamic_capture_sniff": "",
+ "dynamic_capture_ingress": "",
+ "ui_path": "/",
+ "subscription_path": "",
+ "subscriptions_events": null
+}
