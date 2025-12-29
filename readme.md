@@ -27,7 +27,7 @@ cat <<EOF >/etc/fail2ban/filter.d/zoraxy.conf
 [Definition]
 # Protect against scanners and script kiddies – for Zoraxy from V. 3.2.4
 # FAILREGEX: Counts errors (401|403|404|429|444), ignores requests for favicon.ico, robots.txt, /api/notes/, api/renew, apple-touch-icon
-failregex = \[client:\s*<HOST>\].*(GET|POST|HEAD|PUT|DELETE|OPTIONS)\s+/(?!favicon\.ico|robots\.txt|api/notes/|api/renew|apple-touch-icon(?:-[^/]+)?(?:-precomposed)?\.png)[^\s]*\s+(401|403|404|429|444)
+failregex = \[client:\s*<HOST>\].*(GET|POST|PATCH|HEAD|PUT|DELETE|OPTIONS)\s+/(?!favicon\.ico|robots\.txt|api/notes/|api/renew|apple-touch-icon(?:-[^/]+)?(?:-precomposed)?\.png)[^\s]*\s+(401|403|404|429|444)
 EOF
 chmod 777 /etc/fail2ban/filter.d/zoraxy.conf
 ```
