@@ -8,7 +8,8 @@ This is a simple plugin for [Zoraxy](https://github.com/tobychui/zoraxy) that en
 To use this plugin, you must first have fail2ban installed.
 
 > [!WARNING]
-> This does NOT work with docker!!! It is not possible to have zoraxy and fail2ban (using unix sockets and systemd) running, to my knowledge.
+> This does NOT work with docker!!! This plugin uses the `fail2ban-client` CLI tool to work, which is not accessible in a docker environment (to my knowledge)
+> If you manages to find a way to get Fail2Ban to work with docker in a way where the CLI tool can be called from Zoraxy, please make a PR.
 
 ## Fail2Ban
 
