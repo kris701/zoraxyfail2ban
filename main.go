@@ -14,16 +14,21 @@ import (
 	"strings"
 
 	plugin "github.com/kris701/zoraxyfail2ban/mod/zoraxy_plugin"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 const (
 	PLUGIN_ID = "zoraxyfail2ban"
 	UI_PATH   = "/"
 	WEB_ROOT  = "/www"
+	LOG_DELAY = 60000
 )
 
 //go:embed www/*
 var content embed.FS
+
+var watcherRef *fsnotify.Watcher
 
 func main() {
 	runtimeCfg, err := plugin.ServeAndRecvSpec(&plugin.IntroSpect{
@@ -35,7 +40,7 @@ func main() {
 		URL:           "https://github.com/kris701/zoraxyfail2ban",
 		Type:          plugin.PluginType_Utilities,
 		VersionMajor:  1,
-		VersionMinor:  1,
+		VersionMinor:  2,
 		VersionPatch:  1,
 		UIPath:        UI_PATH,
 	})
@@ -54,11 +59,70 @@ func main() {
 	embedWebRouter.HandleFunc("/api/ban", banIp, nil)
 	embedWebRouter.HandleFunc("/api/unban", unBanIp, nil)
 
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		panic(err)
+	}
+	defer watcher.Close()
+	watcherRef = watcher
+	go pathWatcherLoop(watcher)
+	setLogDirs(watcher)
+
 	http.Handle(UI_PATH, embedWebRouter.Handler())
 	fmt.Println("Fail2Ban started at http://127.0.0.1:" + strconv.Itoa(runtimeCfg.Port))
 	err = http.ListenAndServe("127.0.0.1:"+strconv.Itoa(runtimeCfg.Port), nil)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func pathWatcherLoop(w *fsnotify.Watcher) {
+	for {
+		select {
+		case event, ok := <-w.Events:
+			if !ok {
+				return
+			}
+			if event.Has(fsnotify.Create) {
+				fmt.Println("New log file detected! Restarting Fail2Ban")
+				cmd := exec.Command("fail2ban-client", "reload", "--restart")
+				cmd.Run()
+				cmd.Wait()
+			}
+		case err, ok := <-w.Errors:
+			if !ok {
+				return
+			}
+			fmt.Println("error:", err)
+		}
+	}
+}
+
+func setLogDirs(w *fsnotify.Watcher) {
+	fData, err := os.ReadFile("/etc/fail2ban/jail.local")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("Updating path watchers")
+
+	logPathItemsRegex := regexp.MustCompile(`(?m)logpath = (.*)`)
+	logPathItemStr := logPathItemsRegex.FindStringSubmatch(string(fData))
+	if len(logPathItemStr) > 0 {
+		logPathItems := strings.Split(logPathItemStr[1], " ")
+
+		for _, element := range w.WatchList() {
+			w.Remove(element)
+		}
+		for _, element := range logPathItems {
+			var lastIndex = strings.LastIndex(element, "/")
+			targetDir := element[0:lastIndex]
+			fmt.Println("Adding watcher for " + targetDir)
+			err = w.Add(targetDir)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	}
 }
 
@@ -184,6 +248,8 @@ func processJail(w http.ResponseWriter, r *http.Request) {
 		cmd3 := exec.Command("fail2ban-client", "reload", "--restart")
 		cmd3.Run()
 		cmd3.Wait()
+
+		setLogDirs(watcherRef)
 		return
 	}
 	http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
