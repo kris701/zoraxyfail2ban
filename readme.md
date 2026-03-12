@@ -7,6 +7,10 @@ This is a simple plugin for [Zoraxy](https://github.com/tobychui/zoraxy) that en
 # Installation
 To use this plugin, you must first have fail2ban installed.
 
+> [!WARNING]
+> This does NOT work with docker!!! This plugin uses the `fail2ban-client` CLI tool to work, which is not accessible in a docker environment (to my knowledge).
+> If you manage to find a way to get Fail2Ban to work with docker in a way where the CLI tool can be called from Zoraxy and the entire proxy routing still works, please make a PR.
+
 ## Fail2Ban
 
 All the following steps is assumed to be run with `sudo -i` or as a root user.
@@ -27,7 +31,7 @@ cat <<EOF >/etc/fail2ban/filter.d/zoraxy.conf
 [Definition]
 # Protect against scanners and script kiddies – for Zoraxy from V. 3.2.4
 # FAILREGEX: Counts errors (401|403|404|429|444), ignores requests for favicon.ico, robots.txt, /api/notes/, api/renew, apple-touch-icon
-failregex = \[client:\s*<HOST>\].*(GET|POST|HEAD|PUT|DELETE|OPTIONS)\s+/(?!favicon\.ico|robots\.txt|api/notes/|api/renew|apple-touch-icon(?:-[^/]+)?(?:-precomposed)?\.png)[^\s]*\s+(401|403|404|429|444)
+failregex = \[client:\s*<HOST>\].*(GET|POST|PATCH|HEAD|PUT|DELETE|OPTIONS)\s+/(?!favicon\.ico|robots\.txt|api/notes/|api/renew|apple-touch-icon(?:-[^/]+)?(?:-precomposed)?\.png)[^\s]*\s+(401|403|404|429|444)
 EOF
 chmod 777 /etc/fail2ban/filter.d/zoraxy.conf
 ```
@@ -73,17 +77,7 @@ chmod 777 /var/run/fail2ban/fail2ban.sock
 
 ## Plugin
 
-You can now install the Zoraxy plugin itself, by doing the following:
-
-```bash
-mkdir -p /opt/zoraxy/plugins/zoraxyfail2ban
-cd /opt/zoraxy/plugins/zoraxyfail2ban
-# wget <LINK_TO_LATEST_BINARY>
-wget https://github.com/kris701/zoraxyfail2ban/releases/download/v1.1.1/zoraxyfail2ban
-chmod +x zoraxyfail2ban
-```
-
-Then you can restart your Zoraxy server or service and you should be able to see the new plugin in the sidebar.
+You can now go to the Zoraxy Plugin Store (in Zoraxy) and install the plugin!
 
 # Development
 
